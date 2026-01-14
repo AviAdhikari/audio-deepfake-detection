@@ -1,0 +1,39 @@
+"""Default configuration file for deepfake detection."""
+
+audio:
+  target_sr: 16000          # Sampling rate in Hz
+  n_mels: 128               # Number of Mel bands
+  n_fft: 2048               # FFT window size
+  hop_length: 512           # Samples between frames
+  n_mfcc: 13                # MFCC coefficients
+  target_duration: null     # Max duration in seconds (null = full audio)
+  target_length: 256        # Time steps for features
+
+model:
+  num_cnn_filters: 32       # Base filters for CNN
+  lstm_units: 128           # LSTM units
+  dropout_rate: 0.3         # Dropout probability
+  num_attention_heads: 8    # Attention heads
+  input_shape: [2, 39, 256] # (channels, height, width)
+
+training:
+  epochs: 50                # Training epochs
+  batch_size: 32            # Batch size
+  learning_rate: 0.001      # Adam learning rate
+  patience: 10              # Early stopping patience
+  validation_split: 0.2     # Validation split ratio
+  test_split: 0.1           # Test split ratio
+
+inference:
+  threshold: 0.5            # Classification threshold
+  batch_size: 32            # Inference batch size
+
+paths:
+  data_dir: data            # Data directory
+  model_dir: models         # Models directory
+  log_dir: logs             # Logs directory
+  output_dir: output        # Output directory
+
+logging:
+  level: INFO               # Logging level
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
