@@ -4,6 +4,7 @@ A production-ready deep learning system for detecting deepfakes in audio using a
 
 ## Features
 
+### Core Architecture
 - **Multi-scale CNN**: Captures spectral patterns at different scales (3x3, 5x5, 7x7 kernels)
 - **Self-Attention Mechanism**: Weights temporal dependencies across feature scales
 - **Bidirectional LSTM**: Models sequential audio patterns
@@ -12,6 +13,13 @@ A production-ready deep learning system for detecting deepfakes in audio using a
 - **Cross-Validation**: K-fold cross-validation for robust model assessment
 - **Production Inference**: Batch processing with configurable threshold-based detection
 - **Configuration Management**: YAML/JSON-based configuration system
+
+### AI Upgrades (Phase 2)
+- **Transformer Models**: TransformerDeepfakeDetector and HybridTransformerCNNDetector for superior long-range dependency modeling
+- **Pre-trained Foundation Models**: Wav2Vec2, HuBERT, Whisper, and AudioMAE extractors for self-supervised feature learning
+- **Foundation Model Ensemble**: Combines multiple pre-trained models for improved generalization and cross-dataset robustness
+- **Explainable AI (XAI)**: Grad-CAM and SHAP visualizations to identify deepfake-triggering spectral regions
+- **Integrated Gradients**: Feature attribution analysis for interpretable predictions
 
 ## Architecture
 
@@ -158,7 +166,9 @@ audio-deepfake-detection/
 │   │   └── audio_processor.py
 │   ├── models/
 │   │   ├── __init__.py
-│   │   ├── hybrid_model.py
+│   │   ├── hybrid_model.py           # Original CNN-LSTM-Attention
+│   │   ├── transformer_model.py      # Transformer-based models
+│   │   ├── foundation_models.py      # Pre-trained foundation models
 │   │   └── attention.py
 │   ├── training/
 │   │   ├── __init__.py
@@ -167,11 +177,21 @@ audio-deepfake-detection/
 │   ├── inference/
 │   │   ├── __init__.py
 │   │   └── detector.py
+│   ├── xai/
+│   │   ├── __init__.py
+│   │   └── interpretability.py       # XAI visualization (Grad-CAM, SHAP)
 │   ├── utils/
 │   │   ├── __init__.py
 │   │   ├── config.py
 │   │   └── logger.py
 │   └── __init__.py
+├── examples/
+│   ├── train_model.py                # Original training example
+│   ├── inference_example.py           # Original inference example
+│   ├── transformer_training.py        # Transformer model training
+│   ├── foundation_model_features.py   # Foundation model feature extraction
+│   ├── xai_visualization.py           # XAI visualization examples
+│   └── cross_validation_example.py
 ├── data/
 ├── models/
 ├── logs/
@@ -202,27 +222,77 @@ audio-deepfake-detection/
 - ROC-AUC, Sensitivity, Specificity
 - Confusion Matrix (TP, TN, FP, FN)
 
-## Advanced Usage
+## Advanced Features
+
+### Transformer Models
+
+Use Transformer-based alternatives to the original CNN-LSTM model:
 
 ```python
-# Custom model parameters
-model = HybridDeepfakeDetector(
+from src.models.transformer_model import TransformerDeepfakeDetector, HybridTransformerCNNDetector
+
+# Pure Transformer model
+model = TransformerDeepfakeDetector(
     input_shape=(2, 39, 256),
-    num_cnn_filters=64,
-    lstm_units=256,
-    dropout_rate=0.4,
-    num_attention_heads=16
+    num_transformer_blocks=4,
+    embed_dim=128,
+    num_heads=8,
+    ff_dim=256
 )
 
-# Threshold optimization
-optimal_threshold, f1 = MetricsCalculator.find_optimal_threshold(
-    y_true=y_val,
-    y_pred_proba=predictions
+# Hybrid CNN + Transformer model
+model = HybridTransformerCNNDetector(
+    input_shape=(2, 39, 256),
+    num_transformer_blocks=2
 )
-detector.set_threshold(optimal_threshold)
 
-# Export results
-detector.export_results(batch_results, "results.json")
+# Train with existing Trainer
+trainer = Trainer(config)
+history, best_model = trainer.train(model, X_train, y_train, X_val, y_val)
+```
+
+### Foundation Models for Self-Supervised Learning
+
+Leverage pre-trained audio models for improved generalization:
+
+```python
+from src.models.foundation_models import (
+    Wav2Vec2FeatureExtractor,
+    HuBERTFeatureExtractor,
+    WhisperFeatureExtractor,
+    FoundationModelEnsemble
+)
+
+# Single model feature extraction
+wav2vec2 = Wav2Vec2FeatureExtractor()
+features = wav2vec2.extract_features(audio_data, sr=16000)
+
+# Foundation model ensemble for better generalization
+ensemble = FoundationModelEnsemble(model_names=["wav2vec2", "hubert"])
+ensemble_features = ensemble.extract_features(audio_data, sr=16000)
+
+# Use features for downstream deepfake detection training
+```
+
+### Explainable AI (XAI)
+
+Visualize which audio regions trigger deepfake classifications:
+
+```python
+from src.xai.interpretability import XAIVisualizer, GradCAM, SHAPExplainer
+
+# Initialize XAI visualizer
+xai = XAIVisualizer(model, layer_name="conv2d")
+
+# Generate comprehensive explanation
+explanation = xai.explain_prediction(input_data, original_spectrogram)
+
+# Use specific XAI methods
+gradcam = GradCAM(model, layer_name="conv2d")
+heatmap = gradcam.compute_heatmap(input_data)
+
+shap_explainer = SHAPExplainer(model, background_data=X_background)
+shap_explanation = shap_explainer.explain_prediction(input_data)
 ```
 
 ## References
@@ -231,6 +301,12 @@ detector.export_results(batch_results, "results.json")
 - **Multi-scale CNN**: Capture spectral patterns at multiple scales
 - **Self-Attention**: Transformer mechanism for temporal dependency weighting
 - **LSTM**: Long Short-Term Memory for sequential pattern modeling
+- **Transformer**: Improved long-range dependency modeling with multi-head attention
+- **Wav2Vec2**: Self-supervised audio representation learning (Meta/Facebook)
+- **HuBERT**: Hidden Unit BERT for audio (Meta/Facebook)
+- **Whisper**: Robust speech recognition model (OpenAI)
+- **Grad-CAM**: Gradient-weighted Class Activation Mapping for visualization
+- **SHAP**: SHapley Additive exPlanations for model interpretability
 - **ROC-AUC**: Standard metric for binary classification performance
 
 ## License
